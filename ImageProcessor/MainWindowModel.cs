@@ -12,6 +12,7 @@ namespace ImageProcessor
         public string Title { get; set; } = "Image Processor";
 
         private BitmapSource? _imageSource;
+
         public BitmapSource ImageSource
         {
             get => _imageSource!;
@@ -23,6 +24,11 @@ namespace ImageProcessor
         }
 
         public ICommand ChooseImageCommand => new Command(ChooseImage);
+
+        public ICommand ChangeImageFilter => new Command(ProcessImage2);
+
+        public ICommand ProcessImageCommand => new Command(ProcessImage);
+
 
         private void ChooseImage()
         {
@@ -41,8 +47,6 @@ namespace ImageProcessor
             }
         }
 
-        public ICommand ProcessImageCommand => new Command(ProcessImage);
-
         private void ProcessImage()
         {
             byte[] bytes = Convert(ImageSource);
@@ -50,19 +54,22 @@ namespace ImageProcessor
             Array.Reverse<byte>(bytes);
 
             ImageSource = Convert(bytes, ImageSource);
-
-
         }
 
-        private BitmapSource Convert(string imagePath)
+        private void ProcessImage2()
         {
-            BitmapImage bitmapImage = new BitmapImage();
-            bitmapImage.BeginInit();
-            bitmapImage.UriSource = new Uri(imagePath);
-            bitmapImage.CacheOption = BitmapCacheOption.OnLoad; // Important for releasing file handle after loading
-            bitmapImage.EndInit();
+            byte[] bytes = Convert(ImageSource);
 
-            return bitmapImage;
+            Array.Reverse<byte>(bytes);
+
+            ImageSource = ChangeImageBackground(bytes, ImageSource);
+        }
+
+        private BitmapSource ChangeImageBackground(byte[] pixelBytes, BitmapSource src)
+        {
+            int stride = (src.PixelWidth * src.Format.BitsPerPixel + 7) / 8;
+            BitmapSource updatedImg = BitmapSource.Create(src.PixelWidth, src.PixelHeight, src.DpiY, src.DpiX, src.Format, src.Palette, pixelBytes, stride);
+            return updatedImg;
         }
 
         private byte[] Convert(BitmapSource bitmapSource)
