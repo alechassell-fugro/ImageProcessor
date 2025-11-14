@@ -10,7 +10,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -29,6 +29,6 @@
 
 		<Button Grid.Row="1" Grid.Column="2" Content="Change!" Command="{Binding ChangeImageFilter}" />
 
-        <Image Grid.Row="0" Grid.Column="1" Stretch="Uniform" Source="{Binding ImageSource}" />
+        <Image Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Stretch="Uniform" Source="{Binding ImageSource}" />
     </Grid>
 </Window>

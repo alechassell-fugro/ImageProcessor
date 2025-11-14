@@ -60,7 +60,13 @@ namespace ImageProcessor
         {
             byte[] bytes = Convert(ImageSource);
 
-            Array.Reverse<byte>(bytes);
+            for (int i = 0; i < bytes.Length; i += 4)
+            {
+                //bytes[i - 2] = 0; // green to 0
+                bytes[i] -= 10; 
+                bytes[i + 1] -= 10; 
+                bytes[i + 2] -= 10; 
+            }
 
             ImageSource = ChangeImageBackground(bytes, ImageSource);
         }
