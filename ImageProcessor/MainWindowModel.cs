@@ -13,6 +13,7 @@ namespace ImageProcessor
     {
         public string Title { get; set; } = "Image Processor";
 
+        public bool AnimationActive { get; private set; } = false;
         private string _SelectedEffectOption = "1. Invert Colors";
 
         public string SelectedEffectOption
@@ -42,6 +43,10 @@ namespace ImageProcessor
         //public ICommand ChangeImageFilter => new Command(ProcessImage2);
 
         public ICommand ProcessImageCommand => new Command(ProcessImage);
+
+        public ICommand PlayAnimationCommand => new Command(PlayAnimation);
+
+        public ICommand StopAnimationCommand => new Command(StopAnimation);
 
 
         private void ChooseImage()
@@ -203,6 +208,51 @@ namespace ImageProcessor
             bitmapSource.CopyPixels(Int32Rect.Empty, bytes, stride, 0);
 
             return bytes;
+        }
+
+        public void PlayAnimation()
+        {
+            try
+            {
+                int width = ImageSource.PixelWidth; // Null if no image selected
+
+                SetAnimationActive(true);
+
+                // TODO: Update for currently or last selected/cached effect
+                Task _task = RunProcessInLoop();  
+            }
+            catch (NullReferenceException e) { } // TODO: Add error msg
+        }
+
+        private async Task RunProcessInLoop()
+        {
+            // Convert src img to byte array
+            var bytes = Convert(ImageSource);
+
+            while (AnimationActive)
+            {
+                // Alter byte array
+                Array.Reverse(bytes); // TODO: update for different animations  
+
+                // Update window
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    ImageSource = Convert(bytes, ImageSource);
+                });
+
+                // Speed of animation 
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            }
+        }
+
+        public void StopAnimation()
+        {
+            SetAnimationActive(false);
+        }
+
+        private void SetAnimationActive(bool value)
+        {
+            AnimationActive = value; 
         }
 
         private BitmapSource Convert(byte[] pixelBytes, BitmapSource original)
