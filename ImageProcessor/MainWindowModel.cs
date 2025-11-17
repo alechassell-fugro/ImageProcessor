@@ -266,7 +266,6 @@ namespace ImageProcessor
             SetAnimationActive(true);
             ChangeButtonState(false, true); 
 
-            // TODO: Update for currently or last selected/cached effect
             Task _task = RunProcessInLoop();
         }
 
