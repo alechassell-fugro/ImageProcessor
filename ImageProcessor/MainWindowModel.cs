@@ -13,6 +13,18 @@ namespace ImageProcessor
     {
         public string Title { get; set; } = "Image Processor";
 
+        private string _SelectedEffectOption = "1. Invert Colors";
+
+        public string SelectedEffectOption
+        {
+            get => _SelectedEffectOption;
+            set
+            {
+                _SelectedEffectOption = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         private BitmapSource? _imageSource;
 
         public BitmapSource ImageSource
@@ -52,13 +64,24 @@ namespace ImageProcessor
         private void ProcessImage()
         {
             byte[] bytes = Convert(ImageSource);
-
-            //Array.Reverse<byte>(bytes);
-
-            //for (int i = 0; i < bytes.Length; i++)
-            //{
-            //    bytes[i] = (byte)(bytes[i] >> 1);
-            //}
+            switch (SelectedEffectOption) // should this be the private or public property?
+            {
+                case "1. Invert Colors":
+                    ImageSource = Effect1(bytes, ImageSource);
+                    break;
+                case "2. Grayscale":
+                    ImageSource = Effect2(bytes, ImageSource);
+                    break;
+                case "3. Sepia Tone":
+                    ImageSource = Effect3(bytes, ImageSource);
+                    break;
+                case "4. Brightness Adjustment":
+                    ImageSource = Effect4(bytes, ImageSource);
+                    break;
+                case "":
+                    ImageSource = Effect4(bytes, ImageSource);
+                    break;
+            }
 
             //for (int i = 0; i < bytes.Length - 1; i++)
             //{
@@ -126,6 +149,45 @@ namespace ImageProcessor
 
             ImageSource = Convert(bytes, ImageSource);
         }
+
+//===============================   EFFECTS  ==================================
+        private BitmapSource Effect1(byte[] bytes, BitmapSource src)
+        {
+            Array.Reverse<byte>(bytes);
+            return Convert(bytes, src);
+        }
+
+        private BitmapSource Effect2(byte[] bytes, BitmapSource src)
+        {
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = (byte)(255 - bytes[i]);
+            }
+            return Convert(bytes, src);
+        }
+
+        private BitmapSource Effect3(byte[] bytes, BitmapSource src)
+        {
+            for (int i = 0; i < bytes.Length - 1; i++)
+            {
+                byte temp = bytes[i];
+                bytes[i] = bytes[i + 1];
+                bytes[i + 1] = temp;
+            }
+
+            return Convert(bytes, src);
+        }
+
+        private BitmapSource Effect4(byte[] bytes, BitmapSource src)
+        {
+            for (int i = 0; i < bytes.Length - 1; i += 3)
+            {
+                bytes[i] -= 10;
+                bytes[i + 2] += 100;
+            }
+            return Convert(bytes, src);
+        }
+        //=============================================================================
 
         private void ProcessImage2()
         {
