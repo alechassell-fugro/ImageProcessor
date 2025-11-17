@@ -190,7 +190,7 @@ namespace ImageProcessor
                 byte green = bytes[i + 1]; 
                 byte red = bytes[i + 2];  
 
-                double greyscale = ((0.29 * red) + (0.59 * green) + (0.11 * blue)) / 3; 
+                double greyscale = ((0.29 * red) + (0.59 * green) + (0.11 * blue)); 
                 bytes[i] = (byte)greyscale; bytes[i + 1] = bytes[i]; bytes[i + 2] = bytes[i];
             }
             return Convert(bytes, src);
