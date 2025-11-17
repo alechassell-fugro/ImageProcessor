@@ -39,7 +39,7 @@ namespace ImageProcessor
 
         public ICommand ChooseImageCommand => new Command(ChooseImage);
 
-        public ICommand ChangeImageFilter => new Command(ProcessImage2);
+        //public ICommand ChangeImageFilter => new Command(ProcessImage2);
 
         public ICommand ProcessImageCommand => new Command(ProcessImage);
 
@@ -78,79 +78,28 @@ namespace ImageProcessor
                 case "4. Brightness Adjustment":
                     ImageSource = Effect4(bytes, ImageSource);
                     break;
-                case "":
-                    ImageSource = Effect4(bytes, ImageSource);
+                case "5. Custom Effect":
+                    ImageSource = Effect5(bytes, ImageSource);
+                    break;
+                case "6. Slideshow Effect":
+                    ImageSource = Effect6(bytes, ImageSource);
                     break;
             }
 
-            //for (int i = 0; i < bytes.Length - 1; i++)
-            //{
-            //    byte temp = bytes[i];
-            //    bytes[i] = bytes[i + 1];
-            //    bytes[i + 1] = temp;
-
-            //}
-
-            // Cat slideshow
-            //for (int i = 0; i < bytes.Length - 1; i++)
-            //{
-            //    byte temp = bytes[i];
-            //    bytes[i] = bytes[(i + 180) % bytes.Length];
-            //    bytes[(i + 180) % bytes.Length] = temp;
-
-            //}
-
-            //for (int i = 0; i < bytes.Length - 1; i+=3)
-            //{
-            //    bytes[i] -= 10;
-            //    bytes[i + 2] += 100;
-            //}
-
-
-            //for (int i = 0; i < bytes.Length - 1; i += 4)
-            //{
-            //    bytes[i] -= 10;
-            //    bytes[i + 2] += 100;
-            //}
-            //var rand = new Random();
-            //for (int i = 0; i < bytes.Length - 1; i += 4)
-            //{
-            //var Rrand = rand.Next(0, 255);
-            //var Grand = rand.Next(0, 255);
-            //var Brand = rand.Next(0, 255);
-            //    bytes[i] = (byte)(bytes[i]+ Rrand);
-            //    bytes[i+1] = (byte)(bytes[i+1] +Grand);
-            //    //bytes[i+2] = (byte)(bytes[i+2] + Brand);
-            //    //bytes[i+3] -= RArand;
-            //}
-
-            var output = new byte[bytes.Length];
-
-            var blueBytes = bytes.Where((b, i) => i % 4 == 0).ToArray();
-            var greenBytes = bytes.Where((b, i) => i % 4 == 1).ToArray();
-            var redBytes = bytes.Where((b, i) => i % 4 == 2).ToArray();
-            var alphaBytes = bytes.Where((b, i) => i % 4 == 3).ToArray();
-
-
-
-            for(int i = 0; i < blueBytes.Length; i+= 2)
-            {
-                blueBytes[i] = 0;
-            }
-
-            Trace.WriteLine($"len out: {output.Length} len blue: {blueBytes.Length}");
-            for (var i = 0; i < blueBytes.Length; i++)
-            {
-                output[i] = blueBytes[i];
-                output[i+1] = greenBytes[i];
-                output[i+2] = redBytes[i];
-                output[i + 3] = alphaBytes[i];
-            }
-
-            ImageSource = Convert(bytes, ImageSource);
+            //ImageSource = Convert(bytes, ImageSource);
         }
 
 //===============================   EFFECTS  ==================================
+        public ObservableCollection<string> EffectOptions { get; } = new ObservableCollection<string>
+        {
+            "1. Invert Colors",
+            "2. Grayscale",
+            "3. Sepia Tone",
+            "4. Brightness Adjustment",
+            "5. Custom Effect",
+            "6. Slideshow Effect"
+        };
+
         private BitmapSource Effect1(byte[] bytes, BitmapSource src)
         {
             Array.Reverse<byte>(bytes);
@@ -187,22 +136,45 @@ namespace ImageProcessor
             }
             return Convert(bytes, src);
         }
-        //=============================================================================
 
-        private void ProcessImage2()
+        private BitmapSource Effect5(byte[] bytes, BitmapSource src)
         {
-            byte[] bytes = Convert(ImageSource);
-
             for (int i = 0; i < bytes.Length; i += 4)
             {
                 //bytes[i - 2] = 0; // green to 0
-                bytes[i] -= 10; 
-                bytes[i + 1] -= 10; 
-                bytes[i + 2] -= 10; 
+                bytes[i] -= 10;
+                bytes[i + 1] -= 10;
+                bytes[i + 2] -= 10;
             }
+            // could we just return Convert(bytes, src); here?
 
-            ImageSource = ChangeImageBackground(bytes, ImageSource);
+            int stride = (ImageSource.PixelWidth * ImageSource.Format.BitsPerPixel + 7) / 8;
+            ImageSource = BitmapSource.Create(
+                ImageSource.PixelWidth, ImageSource.PixelHeight,
+                ImageSource.DpiY, ImageSource.DpiX,
+                ImageSource.Format,
+                ImageSource.Palette,
+                bytes,
+                stride
+                );
+
+            return ImageSource;
         }
+
+        private BitmapSource Effect6(byte[] bytes, BitmapSource src)
+        {
+            for (int i = 0; i < bytes.Length - 1; i++)
+            {
+                byte temp = bytes[i];
+                bytes[i] = bytes[(i + 180) % bytes.Length];
+                bytes[(i + 180) % bytes.Length] = temp;
+            }
+            
+            return Convert(bytes, src);
+        }
+        //=============================================================================
+
+
 
         // TODO: Complete
         public async Task RunProcessInLoop()
@@ -220,23 +192,7 @@ namespace ImageProcessor
                 await Task.Delay(TimeSpan.FromSeconds(1));
             }
         }
-
-        private BitmapSource ChangeImageBackground(byte[] pixelBytes, BitmapSource src)
-        {
-            int stride = (src.PixelWidth * src.Format.BitsPerPixel + 7) / 8;
-            BitmapSource updatedImg = BitmapSource.Create(src.PixelWidth, src.PixelHeight, src.DpiY, src.DpiX, src.Format, src.Palette, pixelBytes, stride);
-            return updatedImg;
-        }
         //----------------------------------------------------
-
-        public ObservableCollection<string> EffectOptions { get; } = new ObservableCollection<string>
-        {
-            "1. Invert Colors",
-            "2. Grayscale",
-            "3. Sepia Tone",
-            "4. Brightness Adjustment",
-        };
-
 
         private byte[] Convert(BitmapSource bitmapSource)
         {
@@ -264,3 +220,67 @@ namespace ImageProcessor
         }
     }
 }
+
+//for (int i = 0; i < bytes.Length - 1; i++)
+//{
+//    byte temp = bytes[i];
+//    bytes[i] = bytes[i + 1];
+//    bytes[i + 1] = temp;
+
+//}
+
+// Cat slideshow
+//for (int i = 0; i < bytes.Length - 1; i++)
+//{
+//    byte temp = bytes[i];
+//    bytes[i] = bytes[(i + 180) % bytes.Length];
+//    bytes[(i + 180) % bytes.Length] = temp;
+
+//}
+
+//for (int i = 0; i < bytes.Length - 1; i+=3)
+//{
+//    bytes[i] -= 10;
+//    bytes[i + 2] += 100;
+//}
+
+
+//for (int i = 0; i < bytes.Length - 1; i += 4)
+//{
+//    bytes[i] -= 10;
+//    bytes[i + 2] += 100;
+//}
+//var rand = new Random();
+//for (int i = 0; i < bytes.Length - 1; i += 4)
+//{
+//var Rrand = rand.Next(0, 255);
+//var Grand = rand.Next(0, 255);
+//var Brand = rand.Next(0, 255);
+//    bytes[i] = (byte)(bytes[i]+ Rrand);
+//    bytes[i+1] = (byte)(bytes[i+1] +Grand);
+//    //bytes[i+2] = (byte)(bytes[i+2] + Brand);
+//    //bytes[i+3] -= RArand;
+//}
+
+//var output = new byte[bytes.Length];
+
+//var blueBytes = bytes.Where((b, i) => i % 4 == 0).ToArray();
+//var greenBytes = bytes.Where((b, i) => i % 4 == 1).ToArray();
+//var redBytes = bytes.Where((b, i) => i % 4 == 2).ToArray();
+//var alphaBytes = bytes.Where((b, i) => i % 4 == 3).ToArray();
+
+
+
+//for (int i = 0; i < blueBytes.Length; i += 2)
+//{
+//    blueBytes[i] = 0;
+//}
+
+//Trace.WriteLine($"len out: {output.Length} len blue: {blueBytes.Length}");
+//for (var i = 0; i < blueBytes.Length; i++)
+//{
+//    output[i] = blueBytes[i];
+//    output[i + 1] = greenBytes[i];
+//    output[i + 2] = redBytes[i];
+//    output[i + 3] = alphaBytes[i];
+//}
