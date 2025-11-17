@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -107,6 +108,13 @@ namespace ImageProcessor
             var redBytes = bytes.Where((b, i) => i % 4 == 2).ToArray();
             var alphaBytes = bytes.Where((b, i) => i % 4 == 3).ToArray();
 
+
+
+            for(int i = 0; i < blueBytes.Length; i+= 2)
+            {
+                blueBytes[i] = 0;
+            }
+
             Trace.WriteLine($"len out: {output.Length} len blue: {blueBytes.Length}");
             for (var i = 0; i < blueBytes.Length; i++)
             {
@@ -140,6 +148,16 @@ namespace ImageProcessor
             BitmapSource updatedImg = BitmapSource.Create(src.PixelWidth, src.PixelHeight, src.DpiY, src.DpiX, src.Format, src.Palette, pixelBytes, stride);
             return updatedImg;
         }
+        //----------------------------------------------------
+
+        public ObservableCollection<string> EffectOptions { get; } = new ObservableCollection<string>
+        {
+            "1. Invert Colors",
+            "2. Grayscale",
+            "3. Sepia Tone",
+            "4. Brightness Adjustment",
+        };
+
 
         private byte[] Convert(BitmapSource bitmapSource)
         {

@@ -17,6 +17,16 @@
             <UniformGrid Columns="1" VerticalAlignment="Top">
                 <Button Padding="8" Margin="8" Content="Load Image" Command="{Binding ChooseImageCommand}" />
                 <Button Padding="8" Margin="8" Content="Process Image" Command="{Binding ProcessImageCommand}" />
+                <ComboBox Name="Effect_Options"
+                  Padding="8" Margin="8"
+                  ItemsSource="{Binding EffectOptions}"
+                  
+                  SelectedIndex="0" />
+
+                <!-- Display selected value -->
+                <TextBlock x:Name="SelectedText"
+                        Margin="0,10,0,0"
+                        FontStyle="Italic"/>
             </UniformGrid>
         </Grid>
 
