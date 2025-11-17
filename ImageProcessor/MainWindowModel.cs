@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -51,7 +52,69 @@ namespace ImageProcessor
         {
             byte[] bytes = Convert(ImageSource);
 
-            Array.Reverse<byte>(bytes);
+            //Array.Reverse<byte>(bytes);
+
+            //for (int i = 0; i < bytes.Length; i++)
+            //{
+            //    bytes[i] = (byte)(bytes[i] >> 1);
+            //}
+
+            //for (int i = 0; i < bytes.Length - 1; i++)
+            //{
+            //    byte temp = bytes[i];
+            //    bytes[i] = bytes[i + 1];
+            //    bytes[i + 1] = temp;
+
+            //}
+
+            // Cat slideshow
+            //for (int i = 0; i < bytes.Length - 1; i++)
+            //{
+            //    byte temp = bytes[i];
+            //    bytes[i] = bytes[(i + 180) % bytes.Length];
+            //    bytes[(i + 180) % bytes.Length] = temp;
+
+            //}
+
+            //for (int i = 0; i < bytes.Length - 1; i+=3)
+            //{
+            //    bytes[i] -= 10;
+            //    bytes[i + 2] += 100;
+            //}
+
+
+            //for (int i = 0; i < bytes.Length - 1; i += 4)
+            //{
+            //    bytes[i] -= 10;
+            //    bytes[i + 2] += 100;
+            //}
+            //var rand = new Random();
+            //for (int i = 0; i < bytes.Length - 1; i += 4)
+            //{
+            //var Rrand = rand.Next(0, 255);
+            //var Grand = rand.Next(0, 255);
+            //var Brand = rand.Next(0, 255);
+            //    bytes[i] = (byte)(bytes[i]+ Rrand);
+            //    bytes[i+1] = (byte)(bytes[i+1] +Grand);
+            //    //bytes[i+2] = (byte)(bytes[i+2] + Brand);
+            //    //bytes[i+3] -= RArand;
+            //}
+
+            var output = new byte[bytes.Length];
+
+            var blueBytes = bytes.Where((b, i) => i % 4 == 0).ToArray();
+            var greenBytes = bytes.Where((b, i) => i % 4 == 1).ToArray();
+            var redBytes = bytes.Where((b, i) => i % 4 == 2).ToArray();
+            var alphaBytes = bytes.Where((b, i) => i % 4 == 3).ToArray();
+
+            Trace.WriteLine($"len out: {output.Length} len blue: {blueBytes.Length}");
+            for (var i = 0; i < blueBytes.Length; i++)
+            {
+                output[i] = blueBytes[i];
+                output[i+1] = greenBytes[i];
+                output[i+2] = redBytes[i];
+                output[i + 3] = alphaBytes[i];
+            }
 
             ImageSource = Convert(bytes, ImageSource);
         }

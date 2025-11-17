@@ -8,27 +8,18 @@
         Title="MainWindow" Height="650" Width="1000"
         d:DataContext="{d:DesignInstance {x:Type local:MainWindowModel}}">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-			<ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}" 
-                   FontSize="24" FontWeight="Bold" 
-                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Grid Grid.Column="0">
+            <UniformGrid Columns="1" VerticalAlignment="Top">
+                <Button Padding="8" Margin="8" Content="Load Image" Command="{Binding ChooseImageCommand}" />
+                <Button Padding="8" Margin="8" Content="Process Image" Command="{Binding ProcessImageCommand}" />
+            </UniformGrid>
+        </Grid>
 
-        <Button Grid.Row="1" Grid.Column="0" Content="Load Image" Command="{Binding ChooseImageCommand}" />
-
-        <Button Grid.Row="1" Grid.Column="1" Content="Process Image" Command="{Binding ProcessImageCommand}" />
-
-		<Button Grid.Row="1" Grid.Column="2" Content="Change!" Command="{Binding ChangeImageFilter}" />
-
-        <Image Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Stretch="Uniform" Source="{Binding ImageSource}" />
+        <Image Grid.Column="1" Width="800" Source="{Binding ImageSource}" />
     </Grid>
 </Window>
