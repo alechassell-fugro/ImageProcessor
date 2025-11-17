@@ -22,10 +22,11 @@
                   ItemsSource="{Binding EffectOptions}"
                   SelectedItem="{Binding SelectedEffectOption, Mode=TwoWay}"
                   SelectedIndex="0" />
+
                 <Button Padding="8" Margin="8" Content="Save Image" Command="{Binding SaveImageCommand}" />
-                
-                <Button Padding="8" Margin="8" Content="Play Animation" Background="ForestGreen" BorderThickness="4" BorderBrush="DarkSlateGray" Command="{Binding PlayAnimationCommand}" />
-                <Button Padding="8" Margin="8" Content="Stop Animation" Background="Firebrick" BorderThickness="4" BorderBrush="DarkSlateGray" Command="{Binding StopAnimationCommand}" />
+                <Button Padding="8" Margin="8" Content="Play Animation" Background="ForestGreen" BorderThickness="4" BorderBrush="DarkSlateGray" Command="{Binding PlayAnimationCommand}" IsEnabled="{Binding PlayButtonEnabled}"/>
+                <Button Name="StopButton" Padding="8" Margin="8" Content="Stop Animation" Background="Firebrick" BorderThickness="4" BorderBrush="DarkSlateGray" Command="{Binding StopAnimationCommand}" IsEnabled="{Binding StopButtonEnabled}" />
+                <Button Padding="8" Margin="8" Content="Reset Animation" Background="SandyBrown" BorderThickness="4" BorderBrush="DarkSlateGray" Command="{Binding ResetAnimationCommand}" />
             </UniformGrid>
         </Grid>
 

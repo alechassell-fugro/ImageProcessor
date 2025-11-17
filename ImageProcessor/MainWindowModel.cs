@@ -12,9 +12,32 @@ namespace ImageProcessor
     public class MainWindowModel : INotifyPropertyChanged
     {
         public string Title { get; set; } = "Image Processor";
+        private Uri? UriFileSrc;
 
         public bool AnimationActive { get; private set; } = false;
+
         private string _SelectedEffectOption = "1. Invert Colors";
+        private bool _PlayButtonEnabled = true;
+        private bool _StopButtonEnabled = false;
+
+        public bool PlayButtonEnabled 
+        { 
+            get => _PlayButtonEnabled;
+            private set
+            {
+                _PlayButtonEnabled = value;
+                NotifyPropertyChanged();
+            }
+        } 
+        public bool StopButtonEnabled
+        {
+            get => _StopButtonEnabled;
+            private set
+            {
+                _StopButtonEnabled = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         public string SelectedEffectOption
         {
@@ -28,9 +51,9 @@ namespace ImageProcessor
 
         private BitmapSource? _imageSource;
 
-        public BitmapSource ImageSource
+        public BitmapSource? ImageSource
         {
-            get => _imageSource!;
+            get => _imageSource;
             private set
             {
                 _imageSource = value;
@@ -46,6 +69,8 @@ namespace ImageProcessor
         public ICommand PlayAnimationCommand => new Command(PlayAnimation);
 
         public ICommand StopAnimationCommand => new Command(StopAnimation);
+
+        public ICommand ResetAnimationCommand => new Command(ResetAnimation);
 
         private void SaveProcessedImageToFile()
         {
@@ -77,15 +102,36 @@ namespace ImageProcessor
                 string selectedFileName = openImg.FileName;
                 BitmapImage source = new BitmapImage();
                 source.BeginInit();
-                source.UriSource = new Uri(selectedFileName);
+                UriFileSrc = new Uri(selectedFileName);
+                source.UriSource = UriFileSrc;
                 source.EndInit();
                 
-                ImageSource = source; 
+                ImageSource = source;
             }
+        }
+
+        private void ReloadImage()
+        {
+            if (UriFileSrc is null)
+            {
+                return; 
+            }
+
+            BitmapImage source = new BitmapImage();
+            source.BeginInit();
+            source.UriSource = UriFileSrc;
+            source.EndInit();
+
+            ImageSource = source;
         }
 
         private void ProcessImage()
         {
+            if (ImageSource is null)
+            {
+                return; // handle no image selected
+            }
+
             byte[] bytes = Convert(ImageSource);
             switch (SelectedEffectOption) // should this be the private or public property?
             {
@@ -107,6 +153,9 @@ namespace ImageProcessor
                 case "6. Slideshow Effect":
                     ImageSource = Effect6(bytes, ImageSource);
                     break;
+                case "7. Black and White Effect":
+                    ImageSource = Effect7(bytes, ImageSource);
+                    break;
             }
         }
 
@@ -118,7 +167,8 @@ namespace ImageProcessor
             "3. Sepia Tone",
             "4. Brightness Adjustment",
             "5. Custom Effect",
-            "6. Slideshow Effect"
+            "6. Slideshow Effect",
+            "7. Black and White Effect"
         };
 
         private BitmapSource Effect1(byte[] bytes, BitmapSource src)
@@ -193,7 +243,22 @@ namespace ImageProcessor
             
             return Convert(bytes, src);
         }
+
+        private BitmapSource Effect7(byte[] bytes, BitmapSource src)
+        {
+            for (int i = 0; i < bytes.Length; i += 4)
+            {
+                byte blue = bytes[i];  
+                byte green = bytes[i + 1]; 
+                byte red = bytes[i + 2];  
+
+                double greyscale = ((0.29 * red) + (0.59 * green) + (0.11 * blue)); 
+                bytes[i] = (byte)greyscale; bytes[i + 1] = bytes[i]; bytes[i + 2] = bytes[i];
+            }
+            return Convert(bytes, src);
+        }
         //=============================================================================
+
 
         private byte[] Convert(BitmapSource bitmapSource)
         {
@@ -208,16 +273,17 @@ namespace ImageProcessor
 
         public void PlayAnimation()
         {
-            try
-            {
-                int width = ImageSource.PixelWidth; // Null if no image selected
+            if (ImageSource is null) 
+            { 
+                return; // handle no image selected
+            } 
 
-                SetAnimationActive(true);
+            int width = ImageSource.PixelWidth; // Null if no image selected
+            SetAnimationActive(true);
+            ChangeButtonState(false, true); 
 
-                // TODO: Update for currently or last selected/cached effect
-                Task _task = RunProcessInLoop();  
-            }
-            catch (NullReferenceException e) { } // TODO: Add error msg
+            // TODO: Update for currently or last selected/cached effect
+            Task _task = RunProcessInLoop();
         }
 
         private async Task RunProcessInLoop()
@@ -237,12 +303,36 @@ namespace ImageProcessor
 
         public void StopAnimation()
         {
+            if (ImageSource is null)
+            {
+                return; // handle no image selected
+            }
+
             SetAnimationActive(false);
+            ChangeButtonState(true, false);
+        }
+
+        public void ResetAnimation()
+        {
+            if (ImageSource is null)
+            {
+                return; // handle no image selected
+            }
+
+            SetAnimationActive(false);
+            ChangeButtonState(true, false);
+            ReloadImage();
         }
 
         private void SetAnimationActive(bool value)
         {
             AnimationActive = value; 
+        }
+
+        private void ChangeButtonState(bool playButton, bool stopButton)
+        {
+            PlayButtonEnabled = playButton;
+            StopButtonEnabled = stopButton;
         }
 
         private BitmapSource Convert(byte[] pixelBytes, BitmapSource original)
