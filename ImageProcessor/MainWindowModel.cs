@@ -216,11 +216,6 @@ namespace ImageProcessor
             SetAnimationActive(false);
         }
 
-        public void ResetAnimation()
-        {
-            SetAnimationActive(false);
-        }
-
         private void SetAnimationActive(bool value)
         {
             AnimationActive = value; 
