@@ -63,9 +63,8 @@ namespace ImageProcessor
 
         public ICommand ChooseImageCommand => new Command(ChooseImage);
 
-        //public ICommand ChangeImageFilter => new Command(ProcessImage2);
-
         public ICommand ProcessImageCommand => new Command(ProcessImage);
+        public ICommand SaveImageCommand => new Command(SaveProcessedImageToFile);
 
         public ICommand PlayAnimationCommand => new Command(PlayAnimation);
 
@@ -73,7 +72,26 @@ namespace ImageProcessor
 
         public ICommand ResetAnimationCommand => new Command(ResetAnimation);
 
+        private void SaveProcessedImageToFile()
+        {
+            // Save the image
+            if (_imageSource != null)
+            {   // CHECK WHETHER ALREADY SAVING
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
 
+                saveFileDialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp|Webp Image|*.webp";
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    BitmapEncoder encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(_imageSource));
+                    using (var stream = System.IO.File.Create(saveFileDialog.FileName))
+                    {
+                        encoder.Save(stream);
+                    }
+                }
+            }
+        }
         private void ChooseImage()
         {
             OpenFileDialog openImg = new OpenFileDialog();
@@ -139,8 +157,6 @@ namespace ImageProcessor
                     ImageSource = Effect7(bytes, ImageSource);
                     break;
             }
-
-            //ImageSource = Convert(bytes, ImageSource);
         }
 
 //===============================   EFFECTS  ==================================
@@ -271,19 +287,12 @@ namespace ImageProcessor
 
         private async Task RunProcessInLoop()
         {
-            // Convert src img to byte array
-            var bytes = Convert(ImageSource);
-
             while (AnimationActive)
             {
-                // Alter byte array
-                //Array.Reverse(bytes); // TODO: update for different animations  
-
                 // Update window
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     ProcessImage();
-                    //ImageSource = Convert(bytes, ImageSource);
                 });
 
                 // Speed of animation 
