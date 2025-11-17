@@ -182,21 +182,21 @@ namespace ImageProcessor
 
 
         // TODO: Complete
-        public async Task RunProcessInLoop()
-        {
-            var bytes = Convert(ImageSource);
+        //public async Task RunProcessInLoop()
+        //{
+        //    var bytes = Convert(ImageSource);
 
-            while (true)
-            {
-                Array.Reverse(bytes);
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    ImageSource = Convert(bytes, ImageSource);
-                });
+        //    while (true)
+        //    {
+        //        Array.Reverse(bytes);
+        //        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        //        {
+        //            ImageSource = Convert(bytes, ImageSource);
+        //        });
 
-                await Task.Delay(TimeSpan.FromSeconds(1));
-            }
-        }
+        //        await Task.Delay(TimeSpan.FromSeconds(1));
+        //    }
+        //}
         //----------------------------------------------------
 
         private byte[] Convert(BitmapSource bitmapSource)
@@ -232,12 +232,13 @@ namespace ImageProcessor
             while (AnimationActive)
             {
                 // Alter byte array
-                Array.Reverse(bytes); // TODO: update for different animations  
+                //Array.Reverse(bytes); // TODO: update for different animations  
 
                 // Update window
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    ImageSource = Convert(bytes, ImageSource);
+                    ProcessImage();
+                    //ImageSource = Convert(bytes, ImageSource);
                 });
 
                 // Speed of animation 
