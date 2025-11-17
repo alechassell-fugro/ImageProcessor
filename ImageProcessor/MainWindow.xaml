@@ -20,7 +20,7 @@
                 <ComboBox Name="Effect_Options"
                   Padding="8" Margin="8"
                   ItemsSource="{Binding EffectOptions}"
-                  
+                  SelectedItem="{Binding SelectedEffectOption, Mode=TwoWay}"
                   SelectedIndex="0" />
 
                 <!-- Display selected value -->
