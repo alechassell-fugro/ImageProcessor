@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -11,6 +12,20 @@ namespace ImageProcessor
 {
     public class MainWindowModel : INotifyPropertyChanged
     {
+        public MainWindowModel()
+        {
+            // Attempt loading from cache
+            string cached = ReadFileFromCache(AppDataPath);
+            if(!string.IsNullOrWhiteSpace(cached) && File.Exists(cached))
+            {
+                UriFileSrc = new Uri(cached);
+                BitmapImage source = new BitmapImage();
+                source.BeginInit();
+                source.UriSource = UriFileSrc;
+                source.EndInit();
+                ImageSource = source;
+            }
+        }
         public string Title { get; set; } = "Image Processor";
         private Uri? UriFileSrc;
 
@@ -20,15 +35,15 @@ namespace ImageProcessor
         private bool _PlayButtonEnabled = true;
         private bool _StopButtonEnabled = false;
 
-        public bool PlayButtonEnabled 
-        { 
+        public bool PlayButtonEnabled
+        {
             get => _PlayButtonEnabled;
             private set
             {
                 _PlayButtonEnabled = value;
                 NotifyPropertyChanged();
             }
-        } 
+        }
         public bool StopButtonEnabled
         {
             get => _StopButtonEnabled;
@@ -105,16 +120,19 @@ namespace ImageProcessor
                 UriFileSrc = new Uri(selectedFileName);
                 source.UriSource = UriFileSrc;
                 source.EndInit();
-                
+
                 ImageSource = source;
+                
+                SaveFileToCache(AppDataPath, openImg.FileName);
             }
+            // Cache file
         }
 
         private void ReloadImage()
         {
             if (UriFileSrc is null)
             {
-                return; 
+                return;
             }
 
             BitmapImage source = new BitmapImage();
@@ -159,7 +177,7 @@ namespace ImageProcessor
             }
         }
 
-//===============================   EFFECTS  ==================================
+        //===============================   EFFECTS  ==================================
         public ObservableCollection<string> EffectOptions { get; } = new ObservableCollection<string>
         {
             "1. Invert Colors",
@@ -217,19 +235,7 @@ namespace ImageProcessor
                 bytes[i + 1] -= 10;
                 bytes[i + 2] -= 10;
             }
-            // could we just return Convert(bytes, src); here?
-
-            int stride = (ImageSource.PixelWidth * ImageSource.Format.BitsPerPixel + 7) / 8;
-            ImageSource = BitmapSource.Create(
-                ImageSource.PixelWidth, ImageSource.PixelHeight,
-                ImageSource.DpiY, ImageSource.DpiX,
-                ImageSource.Format,
-                ImageSource.Palette,
-                bytes,
-                stride
-                );
-
-            return ImageSource;
+            return Convert(bytes, src);
         }
 
         private BitmapSource Effect6(byte[] bytes, BitmapSource src)
@@ -240,7 +246,7 @@ namespace ImageProcessor
                 bytes[i] = bytes[(i + 180) % bytes.Length];
                 bytes[(i + 180) % bytes.Length] = temp;
             }
-            
+
             return Convert(bytes, src);
         }
 
@@ -248,39 +254,26 @@ namespace ImageProcessor
         {
             for (int i = 0; i < bytes.Length; i += 4)
             {
-                byte blue = bytes[i];  
-                byte green = bytes[i + 1]; 
-                byte red = bytes[i + 2];  
+                byte blue = bytes[i];
+                byte green = bytes[i + 1];
+                byte red = bytes[i + 2];
 
-                double greyscale = ((0.29 * red) + (0.59 * green) + (0.11 * blue)); 
+                double greyscale = ((0.29 * red) + (0.59 * green) + (0.11 * blue));
                 bytes[i] = (byte)greyscale; bytes[i + 1] = bytes[i]; bytes[i + 2] = bytes[i];
             }
             return Convert(bytes, src);
         }
-        //=============================================================================
-
-
-        private byte[] Convert(BitmapSource bitmapSource)
-        {
-            int stride = (bitmapSource.PixelWidth * bitmapSource.Format.BitsPerPixel + 7) / 8;
-
-            byte[] bytes = new byte[stride * bitmapSource.PixelHeight];
-
-            bitmapSource.CopyPixels(Int32Rect.Empty, bytes, stride, 0);
-
-            return bytes;
-        }
-
+        //========================================  ANIMATION  ==========================================
         public void PlayAnimation()
         {
-            if (ImageSource is null) 
-            { 
+            if (ImageSource is null)
+            {
                 return; // handle no image selected
-            } 
+            }
 
             int width = ImageSource.PixelWidth; // Null if no image selected
             SetAnimationActive(true);
-            ChangeButtonState(false, true); 
+            ChangeButtonState(false, true);
 
             Task _task = RunProcessInLoop();
         }
@@ -299,7 +292,6 @@ namespace ImageProcessor
                 await Task.Delay(TimeSpan.FromSeconds(1));
             }
         }
-
         public void StopAnimation()
         {
             if (ImageSource is null)
@@ -322,10 +314,9 @@ namespace ImageProcessor
             ChangeButtonState(true, false);
             ReloadImage();
         }
-
         private void SetAnimationActive(bool value)
         {
-            AnimationActive = value; 
+            AnimationActive = value;
         }
 
         private void ChangeButtonState(bool playButton, bool stopButton)
@@ -334,11 +325,50 @@ namespace ImageProcessor
             StopButtonEnabled = stopButton;
         }
 
+        //========================================  CONVERSION  ==========================================
+
+
+        private byte[] Convert(BitmapSource bitmapSource)
+        {
+            int stride = (bitmapSource.PixelWidth * bitmapSource.Format.BitsPerPixel + 7) / 8;
+
+            byte[] bytes = new byte[stride * bitmapSource.PixelHeight];
+
+            bitmapSource.CopyPixels(Int32Rect.Empty, bytes, stride, 0);
+
+            return bytes;
+        }
         private BitmapSource Convert(byte[] pixelBytes, BitmapSource original)
         {
             int stride = (original.PixelWidth * original.Format.BitsPerPixel + 7) / 8;
             var bitmapSource = BitmapSource.Create(original.PixelWidth, original.PixelHeight, original.DpiX, original.DpiY, original.Format, original.Palette, pixelBytes, stride);
             return bitmapSource;
+        }
+
+        //========================================  CACHING  ==========================================
+        private string AppDataPath => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), this.Title)).ToString();
+
+        private void SaveFileToCache(string cacheFileDirectory, string prevFilePathText)
+        {
+            string CacheFilePath = Path.Combine(cacheFileDirectory, "last.txt");
+            File.WriteAllText(CacheFilePath, prevFilePathText);
+            Trace.WriteLine($"Writing {prevFilePathText} to cache\n");
+
+        }
+
+        private string ReadFileFromCache(string cacheFileDirectory)
+        {
+            string cacheFilePath = Path.Combine(cacheFileDirectory, "last.txt");
+           
+            if (!File.Exists(cacheFilePath))
+            {
+                return string.Empty;
+            }
+            using var sr = new StreamReader(cacheFilePath);
+            string? line = sr.ReadLine();
+
+            Trace.WriteLine($"Reading {line} from cache\n");
+            return string.IsNullOrWhiteSpace(line) ? string.Empty : line.Trim();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
