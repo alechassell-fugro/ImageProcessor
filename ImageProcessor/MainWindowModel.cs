@@ -12,6 +12,7 @@ namespace ImageProcessor
     public class MainWindowModel : INotifyPropertyChanged
     {
         public string Title { get; set; } = "Image Processor";
+        private Uri? UriFileSrc;
 
         public bool AnimationActive { get; private set; } = false;
         private string _SelectedEffectOption = "1. Invert Colors";
@@ -48,6 +49,8 @@ namespace ImageProcessor
 
         public ICommand StopAnimationCommand => new Command(StopAnimation);
 
+        public ICommand ResetAnimationCommand => new Command(ResetAnimation);
+
 
         private void ChooseImage()
         {
@@ -59,11 +62,27 @@ namespace ImageProcessor
                 string selectedFileName = openImg.FileName;
                 BitmapImage source = new BitmapImage();
                 source.BeginInit();
-                source.UriSource = new Uri(selectedFileName);
+                UriFileSrc = new Uri(selectedFileName);
+                source.UriSource = UriFileSrc;
                 source.EndInit();
                 
-                ImageSource = source; 
+                ImageSource = source;
             }
+        }
+
+        private void ReloadImage()
+        {
+            if (UriFileSrc is null)
+            {
+                return; 
+            }
+
+            BitmapImage source = new BitmapImage();
+            source.BeginInit();
+            source.UriSource = UriFileSrc;
+            source.EndInit();
+
+            ImageSource = source;
         }
 
         private void ProcessImage()
@@ -258,6 +277,17 @@ namespace ImageProcessor
             }
 
             SetAnimationActive(false);
+        }
+
+        public void ResetAnimation()
+        {
+            if (ImageSource is null)
+            {
+                return; // handle no image selected
+            }
+
+            SetAnimationActive(false);
+            ReloadImage();
         }
 
         private void SetAnimationActive(bool value)
