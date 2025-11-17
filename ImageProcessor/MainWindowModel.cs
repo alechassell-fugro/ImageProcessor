@@ -15,7 +15,29 @@ namespace ImageProcessor
         private Uri? UriFileSrc;
 
         public bool AnimationActive { get; private set; } = false;
+
         private string _SelectedEffectOption = "1. Invert Colors";
+        private bool _PlayButtonEnabled = true;
+        private bool _StopButtonEnabled = false;
+
+        public bool PlayButtonEnabled 
+        { 
+            get => _PlayButtonEnabled;
+            private set
+            {
+                _PlayButtonEnabled = value;
+                NotifyPropertyChanged();
+            }
+        } 
+        public bool StopButtonEnabled
+        {
+            get => _StopButtonEnabled;
+            private set
+            {
+                _StopButtonEnabled = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         public string SelectedEffectOption
         {
@@ -242,6 +264,7 @@ namespace ImageProcessor
 
             int width = ImageSource.PixelWidth; // Null if no image selected
             SetAnimationActive(true);
+            ChangeButtonState(false, true); 
 
             // TODO: Update for currently or last selected/cached effect
             Task _task = RunProcessInLoop();
@@ -277,6 +300,7 @@ namespace ImageProcessor
             }
 
             SetAnimationActive(false);
+            ChangeButtonState(true, false);
         }
 
         public void ResetAnimation()
@@ -287,12 +311,19 @@ namespace ImageProcessor
             }
 
             SetAnimationActive(false);
+            ChangeButtonState(true, false);
             ReloadImage();
         }
 
         private void SetAnimationActive(bool value)
         {
             AnimationActive = value; 
+        }
+
+        private void ChangeButtonState(bool playButton, bool stopButton)
+        {
+            PlayButtonEnabled = playButton;
+            StopButtonEnabled = stopButton;
         }
 
         private BitmapSource Convert(byte[] pixelBytes, BitmapSource original)
