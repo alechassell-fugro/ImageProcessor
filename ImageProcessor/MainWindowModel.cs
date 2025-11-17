@@ -28,9 +28,9 @@ namespace ImageProcessor
 
         private BitmapSource? _imageSource;
 
-        public BitmapSource ImageSource
+        public BitmapSource? ImageSource
         {
-            get => _imageSource!;
+            get => _imageSource;
             private set
             {
                 _imageSource = value;
@@ -68,6 +68,11 @@ namespace ImageProcessor
 
         private void ProcessImage()
         {
+            if (ImageSource is null)
+            {
+                return; // handle no image selected
+            }
+
             byte[] bytes = Convert(ImageSource);
             switch (SelectedEffectOption) // should this be the private or public property?
             {
@@ -180,25 +185,6 @@ namespace ImageProcessor
         //=============================================================================
 
 
-
-        // TODO: Complete
-        //public async Task RunProcessInLoop()
-        //{
-        //    var bytes = Convert(ImageSource);
-
-        //    while (true)
-        //    {
-        //        Array.Reverse(bytes);
-        //        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-        //        {
-        //            ImageSource = Convert(bytes, ImageSource);
-        //        });
-
-        //        await Task.Delay(TimeSpan.FromSeconds(1));
-        //    }
-        //}
-        //----------------------------------------------------
-
         private byte[] Convert(BitmapSource bitmapSource)
         {
             int stride = (bitmapSource.PixelWidth * bitmapSource.Format.BitsPerPixel + 7) / 8;
@@ -212,16 +198,16 @@ namespace ImageProcessor
 
         public void PlayAnimation()
         {
-            try
-            {
-                int width = ImageSource.PixelWidth; // Null if no image selected
+            if (ImageSource is null) 
+            { 
+                return; // handle no image selected
+            } 
 
-                SetAnimationActive(true);
+            int width = ImageSource.PixelWidth; // Null if no image selected
+            SetAnimationActive(true);
 
-                // TODO: Update for currently or last selected/cached effect
-                Task _task = RunProcessInLoop();  
-            }
-            catch (NullReferenceException e) { } // TODO: Add error msg
+            // TODO: Update for currently or last selected/cached effect
+            Task _task = RunProcessInLoop();
         }
 
         private async Task RunProcessInLoop()
@@ -248,6 +234,11 @@ namespace ImageProcessor
 
         public void StopAnimation()
         {
+            if (ImageSource is null)
+            {
+                return; // handle no image selected
+            }
+
             SetAnimationActive(false);
         }
 
