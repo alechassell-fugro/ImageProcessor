@@ -94,6 +94,9 @@ namespace ImageProcessor
                 case "6. Slideshow Effect":
                     ImageSource = Effect6(bytes, ImageSource);
                     break;
+                case "7. Black and White Effect":
+                    ImageSource = Effect7(bytes, ImageSource);
+                    break;
             }
 
             //ImageSource = Convert(bytes, ImageSource);
@@ -107,7 +110,8 @@ namespace ImageProcessor
             "3. Sepia Tone",
             "4. Brightness Adjustment",
             "5. Custom Effect",
-            "6. Slideshow Effect"
+            "6. Slideshow Effect",
+            "7. Black and White Effect"
         };
 
         private BitmapSource Effect1(byte[] bytes, BitmapSource src)
@@ -180,6 +184,20 @@ namespace ImageProcessor
                 bytes[(i + 180) % bytes.Length] = temp;
             }
             
+            return Convert(bytes, src);
+        }
+
+        private BitmapSource Effect7(byte[] bytes, BitmapSource src)
+        {
+            for (int i = 0; i < bytes.Length; i += 4)
+            {
+                byte blue = bytes[i];  
+                byte green = bytes[i + 1]; 
+                byte red = bytes[i + 2];  
+
+                double greyscale = ((0.29 * red) + (0.59 * green) + (0.11 * blue)); 
+                bytes[i] = (byte)greyscale; bytes[i + 1] = bytes[i]; bytes[i + 2] = bytes[i];
+            }
             return Convert(bytes, src);
         }
         //=============================================================================
