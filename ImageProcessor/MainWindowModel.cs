@@ -142,6 +142,23 @@ namespace ImageProcessor
             ImageSource = ChangeImageBackground(bytes, ImageSource);
         }
 
+        // TODO: Complete
+        public async Task RunProcessInLoop()
+        {
+            var bytes = Convert(ImageSource);
+
+            while (true)
+            {
+                Array.Reverse(bytes);
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    ImageSource = Convert(bytes, ImageSource);
+                });
+
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            }
+        }
+
         private BitmapSource ChangeImageBackground(byte[] pixelBytes, BitmapSource src)
         {
             int stride = (src.PixelWidth * src.Format.BitsPerPixel + 7) / 8;
