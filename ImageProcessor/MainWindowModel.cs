@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -292,19 +293,15 @@ namespace ImageProcessor
         private BitmapSource Effect8(byte[] bytes, BitmapSource src)
         {
             Trace.WriteLine(bytes.Length);
+            int row = 0;
             for (int i = 0; i < bytes.Length; i += 4)
             {
-                if (i > 31961088 / 2)
+                if (i % src.PixelWidth == 0) row++;
+                if(row % 15 == 0)
                 {
-                    bytes[i] = 255;
-                    bytes[i + 1] = 255;
-                }
-                else
-                {
-                    bytes[i] = (byte)(i / bytes.Length);
-                    bytes[i + 1] = (byte)(i / bytes.Length);
-                    bytes[i + 2] = (byte)(i / bytes.Length);
-                    //bytes[i + 3] = (byte)(i / bytes.Length);
+                    bytes[i] = (byte)row;
+                    bytes[i + 1] = (byte)row;
+                    bytes[i + 2] = (byte)row;
                 }
             }
             return Convert(bytes, src);
@@ -369,6 +366,52 @@ namespace ImageProcessor
             return Convert(bytes, src);
         }
 
+        private BitmapSource Effect10(byte[] bytes, BitmapSource src)
+        {
+            Random rand = new Random();
+            int staticFreq = 10;
+
+            for (int i = 0; i < bytes.Length; i += rand.Next(staticFreq))
+            {
+                bytes[i] = (byte)rand.Next(); // blue
+                bytes[i + 1] = (byte)rand.Next(); // green
+                bytes[i + 2] = (byte)rand.Next(); // red
+                                                  // Currently throws bug if running multiple times TODO: FIx bug
+            }
+            return Convert(bytes, src);
+        }
+
+
+        /*
+         * var bytes = Convert(ImageSource);
+            for(int i = 0; i < bytes.Length; i += 4)
+            {
+                int row = i / ImageSource.PixelWidth;
+                int positionWithinRow = i % ImageSource.PixelWidth;
+                // Only swap the second half of the row
+                //if(positionWithinRow > ImageSource.PixelWidth)
+                //{
+                //    //bytes[i] = 0;
+                //    //bytes[i + 1] = 0;
+                    
+                //    continue;
+                //}
+
+                int destinationWithinRow = ImageSource.PixelWidth - positionWithinRow;
+                int totalDestination = row * ImageSource.PixelWidth + destinationWithinRow;
+                for(int j = 0; j < 3; j++)
+                {
+
+                }
+                byte temp = bytes[i];
+                bytes[i] = bytes[totalDestination];
+                bytes[totalDestination] = temp;
+                   
+            }
+
+            ImageSource = Convert(bytes, ImageSource; 
+         */
+         
         //========================================  IMAGE OPERATIONS==========================================
         public ICommand MirrorHorizontallyCommand => new Command(MirrorHorizontally);
         public ICommand MirrorVerticallyCommand => new Command(MirrorVertically);
@@ -382,9 +425,29 @@ namespace ImageProcessor
                 return; // handle no image selected
             }
             var bytes = Convert(ImageSource);
-            for(int i = 0; i < bytes.Length; i += 4)
+            for(int i = 0; i < bytes.Length -1 ; i += 4)
             {
-                bytes[i] = 0;
+                int row = i / ImageSource.PixelWidth * 4;
+                int positionWithinRow = i % (ImageSource.PixelWidth * 4);
+                //Only swap the second half of the row
+                if (positionWithinRow > ImageSource.PixelWidth * 4)
+                {
+                    //bytes[i] = 0;
+                    //bytes[i + 1] = 0;
+
+                    continue;
+                }
+
+                int destinationWithinRow = ImageSource.PixelWidth * 4 - positionWithinRow;
+                int totalDestination = row * ImageSource.PixelWidth*4 + destinationWithinRow;
+                for(int j = 0; j < 2; j++)
+                {
+                    byte temp = bytes[i+j];
+                    bytes[i+j] = bytes[totalDestination];
+                    bytes[totalDestination] = temp;
+
+                }
+                   
             }
 
             ImageSource = Convert(bytes, ImageSource);
