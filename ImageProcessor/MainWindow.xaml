@@ -5,18 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageProcessor"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="1000"
+        Title="MainWindow" Height="750" Width="1000"
         d:DataContext="{d:DesignInstance {x:Type local:MainWindowModel}}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-
+        
         <Grid Grid.Column="0">
             <UniformGrid Columns="1" VerticalAlignment="Top">
                 <Button Padding="8" Margin="8" Content="Load Image" Command="{Binding ChooseImageCommand}" />
@@ -25,20 +25,32 @@
                   Padding="8" Margin="8"
                   ItemsSource="{Binding EffectOptions}"
                   SelectedItem="{Binding SelectedEffectOption, Mode=TwoWay}"
-                  SelectedIndex="0" 
+                  SelectedIndex="0"
                   VerticalContentAlignment="Center"/>
-
                 <Button Padding="8" Margin="8" Content="Save Image" Command="{Binding SaveImageCommand}" />
                 <Button Padding="8" Margin="8" Content="Play Animation" Background="ForestGreen" BorderThickness="4" BorderBrush="DarkSlateGray" Command="{Binding PlayAnimationCommand}" IsEnabled="{Binding PlayButtonEnabled}"/>
                 <Button Name="StopButton" Padding="8" Margin="8" Content="Stop Animation" Background="Firebrick" BorderThickness="4" BorderBrush="DarkSlateGray" Command="{Binding StopAnimationCommand}" IsEnabled="{Binding StopButtonEnabled}" />
                 <Button Padding="8" Margin="8" Content="Reset Image" Background="SandyBrown" BorderThickness="4" BorderBrush="DarkSlateGray" Command="{Binding ResetAnimationCommand}" />
+                <TextBlock Padding="8" Margin="8" HorizontalAlignment="Center">
+                    <Run Text="Animation speed: "/>
+                    <Run Text="{Binding AnimationSpeed}"/>
+                </TextBlock>
+                <Slider Value="{Binding AnimationSpeed}"  Padding="8" Margin="8" HorizontalAlignment="Center" Width="150"
+                    Height="Auto" Orientation="Horizontal" Minimum="1" Maximum="10" TickPlacement="TopLeft" TickFrequency="1" IsSnapToTickEnabled="True" />
             </UniformGrid>
         </Grid>
-        <Image Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"  Width="800" Source="{Binding ImageSource}" />
-        <Grid Grid.Column="0" Grid.Row="1">
-            <Label Padding="8" Margin="8" HorizontalAlignment="Center" Content="Adjust Animation Speed" />
-            <Slider Value="{Binding AnimationSpeed}"  Padding="8" Margin="8, 40" HorizontalAlignment="Center" Width="Auto"
-                    Height="150" Orientation="Vertical" Minimum="1" Maximum="10" TickPlacement="TopLeft" TickFrequency="1" IsSnapToTickEnabled="True" />
-        </Grid>
+
+        <Border Grid.Column="1" Grid.Row="0" Margin="8" Background="Transparent">
+            <Image Source="{Binding ImageSource}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+
+        <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" >
+            <Button Content="Mirror Horizontally" Command="{Binding MirrorHorizontallyCommand}" Padding="6" Margin="10" />
+            <Button Content="Mirror Vertically" Command="{Binding MirrorVerticallyCommand}" Padding="6" Margin="10" />
+            <Button Content="Rotate" Command="{Binding RotateCommand}" Padding="6" Margin="10" />
+            <Button Content="Downsample" Command="{Binding DownsampleCommand}" Padding="6" Margin="10" />
+        </StackPanel>
+
+
     </Grid>
 </Window>

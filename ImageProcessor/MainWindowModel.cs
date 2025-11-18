@@ -16,7 +16,7 @@ namespace ImageProcessor
         {
             // Attempt loading from cache
             string cached = ReadFileFromCache(AppDataPath);
-            if(!string.IsNullOrWhiteSpace(cached) && File.Exists(cached))
+            if (!string.IsNullOrWhiteSpace(cached) && File.Exists(cached))
             {
                 UriFileSrc = new Uri(cached);
                 BitmapImage source = new BitmapImage();
@@ -133,7 +133,7 @@ namespace ImageProcessor
                 source.EndInit();
 
                 ImageSource = source;
-                
+
                 SaveFileToCache(AppDataPath, openImg.FileName);
             }
             // Cache file
@@ -185,6 +185,9 @@ namespace ImageProcessor
                 case "7. Black and White Effect":
                     ImageSource = Effect7(bytes, ImageSource);
                     break;
+                case "8.":
+                    ImageSource = Effect8(bytes, ImageSource);
+                    break;
             }
         }
 
@@ -197,7 +200,8 @@ namespace ImageProcessor
             "4. Imbalanced Byte Operation",
             "5. Colour Intensity Shift",
             "6. Slideshow Effect",
-            "7. Black and White Effect"
+            "7. Black and White Effect",
+            "8."
         };
 
         private BitmapSource Effect1(byte[] bytes, BitmapSource src)
@@ -273,6 +277,84 @@ namespace ImageProcessor
             }
             return Convert(bytes, src);
         }
+        private BitmapSource Effect8(byte[] bytes, BitmapSource src)
+        {
+            Trace.WriteLine(bytes.Length);
+            for (int i = 0; i < bytes.Length; i += 4)
+            {
+                if (i > 31961088 / 2)
+                {
+                    bytes[i] = 255;
+                    bytes[i + 1] = 255;
+                }
+                else
+                {
+                    bytes[i] = (byte)(i / bytes.Length);
+                    bytes[i + 1] = (byte)(i / bytes.Length);
+                    bytes[i + 2] = (byte)(i / bytes.Length);
+                    //bytes[i + 3] = (byte)(i / bytes.Length);
+                }
+            }
+            return Convert(bytes, src);
+        }
+        //========================================  IMAGE OPERATIONS==========================================
+        public ICommand MirrorHorizontallyCommand => new Command(MirrorHorizontally);
+        public ICommand MirrorVerticallyCommand => new Command(MirrorVertically);
+        public ICommand RotateCommand => new Command(Rotate);
+        public ICommand DownsampleCommand => new Command(Downsample);
+
+        private void MirrorHorizontally()
+        {
+            if (ImageSource is null)
+            {
+                return; // handle no image selected
+            }
+            var bytes = Convert(ImageSource);
+            for(int i = 0; i < bytes.Length; i += 4)
+            {
+                bytes[i] = 0;
+            }
+
+            ImageSource = Convert(bytes, ImageSource);
+        }
+
+        private void MirrorVertically()
+        {
+            if (ImageSource is null)
+            {
+                return; // handle no image selected
+            }
+            //BitmapSource original = ImageSource;
+            //int stride = (original.PixelWidth * original.Format.BitsPerPixel + 7) / 8;
+            //var bitmapSource = BitmapSource.Create(original.PixelWidth, original.PixelHeight, original.DpiX, original.DpiY, original.Format, original.Palette, pixelBytes, stride);
+            //ImageSource = bitmapSource;
+        }
+
+
+        private void Rotate()
+        {
+            if (ImageSource is null)
+            {
+                return; // handle no image selected
+            }
+            //BitmapSource original = ImageSource;
+            //int stride = (original.PixelWidth * original.Format.BitsPerPixel + 7) / 8;
+            //var bitmapSource = BitmapSource.Create(original.PixelWidth, original.PixelHeight, original.DpiX, original.DpiY, original.Format, original.Palette, pixelBytes, stride);
+            //ImageSource = bitmapSource;
+        }
+
+        private void Downsample()
+        {
+            if (ImageSource is null)
+            {
+                return; // handle no image selected
+            }
+            //BitmapSource original = ImageSource;
+            //int stride = (original.PixelWidth * original.Format.BitsPerPixel + 7) / 8;
+            //var bitmapSource = BitmapSource.Create(original.PixelWidth, original.PixelHeight, original.DpiX, original.DpiY, original.Format, original.Palette, pixelBytes, stride);
+            //ImageSource = bitmapSource;
+        }
+
         //========================================  ANIMATION  ==========================================
         public void PlayAnimation()
         {
