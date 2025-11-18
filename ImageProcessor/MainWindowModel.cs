@@ -30,10 +30,21 @@ namespace ImageProcessor
         private Uri? UriFileSrc;
 
         public bool AnimationActive { get; private set; } = false;
+        private int _AnimationSpeed = 1;
 
         private string _SelectedEffectOption = "1. Invert Colors";
         private bool _PlayButtonEnabled = true;
         private bool _StopButtonEnabled = false;
+
+        public string SelectedEffectOption
+        {
+            get => _SelectedEffectOption;
+            set
+            {
+                _SelectedEffectOption = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         public bool PlayButtonEnabled
         {
@@ -54,12 +65,12 @@ namespace ImageProcessor
             }
         }
 
-        public string SelectedEffectOption
+        public int AnimationSpeed
         {
-            get => _SelectedEffectOption;
+            get => _AnimationSpeed;
             set
             {
-                _SelectedEffectOption = value;
+                _AnimationSpeed = value;
                 NotifyPropertyChanged();
             }
         }
@@ -230,7 +241,6 @@ namespace ImageProcessor
         {
             for (int i = 0; i < bytes.Length; i += 4)
             {
-                //bytes[i - 2] = 0; // green to 0
                 bytes[i] -= 10;
                 bytes[i + 1] -= 10;
                 bytes[i + 2] -= 10;
@@ -275,7 +285,7 @@ namespace ImageProcessor
             SetAnimationActive(true);
             ChangeButtonState(false, true);
 
-            Task _task = RunProcessInLoop();
+            Task _task = RunProcessInLoop(); 
         }
 
         private async Task RunProcessInLoop()
@@ -289,9 +299,10 @@ namespace ImageProcessor
                 });
 
                 // Speed of animation 
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                await Task.Delay(TimeSpan.FromMilliseconds((11-AnimationSpeed)*100)); // 1 = 1000ms, 2 = 900ms... 10 = 100ms
             }
         }
+
         public void StopAnimation()
         {
             if (ImageSource is null)
