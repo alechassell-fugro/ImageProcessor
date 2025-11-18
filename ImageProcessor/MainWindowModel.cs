@@ -313,7 +313,7 @@ namespace ImageProcessor
 
             int countHor = 0;
             int currRow = 1;
-            int gridSize = 16;
+            int gridSize = 64; // kept divisible by 4 but maybe not needed?
 
             while (currRow < ImageSource.PixelHeight)
             {
