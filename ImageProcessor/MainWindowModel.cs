@@ -31,7 +31,7 @@ namespace ImageProcessor
 
         public bool AnimationActive { get; private set; } = false;
 
-        private string _SelectedEffectOption = "1. Invert Colors";
+        private string _SelectedEffectOption = "1. Flip Byte Array";
         private bool _PlayButtonEnabled = true;
         private bool _StopButtonEnabled = false;
 
@@ -153,19 +153,19 @@ namespace ImageProcessor
             byte[] bytes = Convert(ImageSource);
             switch (SelectedEffectOption) // should this be the private or public property?
             {
-                case "1. Invert Colors":
+                case "1. Flip Byte Array":
                     ImageSource = Effect1(bytes, ImageSource);
                     break;
-                case "2. Grayscale":
+                case "2. Invert Colours":
                     ImageSource = Effect2(bytes, ImageSource);
                     break;
-                case "3. Sepia Tone":
+                case "3. Shift Colour Channels":
                     ImageSource = Effect3(bytes, ImageSource);
                     break;
-                case "4. Brightness Adjustment":
+                case "4. Imbalanced Byte Operation":
                     ImageSource = Effect4(bytes, ImageSource);
                     break;
-                case "5. Custom Effect":
+                case "5. Colour Intensity Shift":
                     ImageSource = Effect5(bytes, ImageSource);
                     break;
                 case "6. Slideshow Effect":
@@ -180,11 +180,11 @@ namespace ImageProcessor
         //===============================   EFFECTS  ==================================
         public ObservableCollection<string> EffectOptions { get; } = new ObservableCollection<string>
         {
-            "1. Invert Colors",
-            "2. Grayscale",
-            "3. Sepia Tone",
-            "4. Brightness Adjustment",
-            "5. Custom Effect",
+            "1. Flip Byte Array",
+            "2. Invert Colours",
+            "3. Shift Colour Channels",
+            "4. Imbalanced Byte Operation",
+            "5. Colour Intensity Shift",
             "6. Slideshow Effect",
             "7. Black and White Effect"
         };
