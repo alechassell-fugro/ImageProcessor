@@ -25,7 +25,8 @@
                   Padding="8" Margin="8"
                   ItemsSource="{Binding EffectOptions}"
                   SelectedItem="{Binding SelectedEffectOption, Mode=TwoWay}"
-                  SelectedIndex="0" />
+                  SelectedIndex="0" 
+                  VerticalContentAlignment="Center"/>
 
                 <Button Padding="8" Margin="8" Content="Save Image" Command="{Binding SaveImageCommand}" />
                 <Button Padding="8" Margin="8" Content="Play Animation" Background="ForestGreen" BorderThickness="4" BorderBrush="DarkSlateGray" Command="{Binding PlayAnimationCommand}" IsEnabled="{Binding PlayButtonEnabled}"/>
