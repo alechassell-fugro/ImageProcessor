@@ -185,6 +185,12 @@ namespace ImageProcessor
                 case "7. Black and White Effect":
                     ImageSource = Effect7(bytes, ImageSource);
                     break;
+
+
+
+                case "9. Add Checkered Overlay":
+                    ImageSource = Effect9(bytes, ImageSource);
+                    break;
             }
         }
 
@@ -197,7 +203,9 @@ namespace ImageProcessor
             "4. Imbalanced Byte Operation",
             "5. Colour Intensity Shift",
             "6. Slideshow Effect",
-            "7. Black and White Effect"
+            "7. Black and White Effect",
+
+            "9. Add Checkered Overlay"
         };
 
         private BitmapSource Effect1(byte[] bytes, BitmapSource src)
@@ -272,6 +280,68 @@ namespace ImageProcessor
                 bytes[i] = (byte)greyscale; bytes[i + 1] = bytes[i]; bytes[i + 2] = bytes[i];
             }
             return Convert(bytes, src);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        private BitmapSource Effect9(byte[] bytes, BitmapSource src)
+        {
+            int stride = (ImageSource.PixelWidth * ImageSource.Format.BitsPerPixel + 7) / 8;
+            byte[] arr1 = new byte[stride]; // one row of pixels
+
+            int countHor = 0;
+            int currRow = 1; 
+            int gridSize = 16;
+
+            while (currRow < ImageSource.PixelHeight) 
+            {
+                int countVer = 0;
+                for (int i = 0; i < stride; i ++) 
+                {
+                    // copy each byte in this row
+                    arr1[i] = bytes[i + (stride * (currRow))];
+                    if (countVer == (gridSize * 4)) 
+                    {
+                        countVer = 0;
+                        arr1[i] = 255; // max blue 
+                    }
+                    countVer++;
+                }
+                
+               if (countHor == gridSize) 
+                {
+                    countHor = 0; // reset count
+                    for (int i = 0; i < stride; i += 4) // check each pixel across one row length
+                    {
+                        arr1[i] = 255; // max blue 
+                    }
+                }
+                 
+                for (int i = 0; i < stride; i++) 
+                {
+                    // add back in to bytes array
+                    bytes[i + (stride * (currRow))] = arr1[i];
+                }
+                countHor++; 
+                currRow++;
+            }
+
+            
+            return Convert(bytes, src);
+
         }
         //========================================  ANIMATION  ==========================================
         public void PlayAnimation()
