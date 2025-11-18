@@ -290,14 +290,24 @@ namespace ImageProcessor
         {
             Trace.WriteLine(bytes.Length);
             int row = 0;
+            bool written = false;
             for (int i = 0; i < bytes.Length; i += 4)
             {
                 if (i % src.PixelWidth == 0) row++;
                 if(row % 15 == 0)
                 {
+                    if (!written)
+                    {
+                        Trace.WriteLine($"row: {row}");
+                        written = true;
+                    }
                     bytes[i] = (byte)row;
                     bytes[i + 1] = (byte)row;
                     bytes[i + 2] = (byte)row;
+                }
+                else
+                {
+                    written = false;
                 }
             }
             return Convert(bytes, src);
