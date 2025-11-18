@@ -366,22 +366,6 @@ namespace ImageProcessor
             return Convert(bytes, src);
         }
 
-        private BitmapSource Effect10(byte[] bytes, BitmapSource src)
-        {
-            Random rand = new Random();
-            int staticFreq = 10;
-
-            for (int i = 0; i < bytes.Length; i += rand.Next(staticFreq))
-            {
-                bytes[i] = (byte)rand.Next(); // blue
-                bytes[i + 1] = (byte)rand.Next(); // green
-                bytes[i + 2] = (byte)rand.Next(); // red
-                                                  // Currently throws bug if running multiple times TODO: FIx bug
-            }
-            return Convert(bytes, src);
-        }
-
-
         /*
          * var bytes = Convert(ImageSource);
             for(int i = 0; i < bytes.Length; i += 4)
