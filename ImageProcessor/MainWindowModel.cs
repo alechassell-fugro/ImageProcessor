@@ -305,6 +305,51 @@ namespace ImageProcessor
             }
             return Convert(bytes, src);
         }
+
+        private BitmapSource Effect9(byte[] bytes, BitmapSource src)
+        {
+            int stride = (ImageSource.PixelWidth * ImageSource.Format.BitsPerPixel + 7) / 8;
+            byte[] arr1 = new byte[stride]; // one row of pixels
+
+            int countHor = 0;
+            int currRow = 1;
+            int gridSize = 16;
+
+            while (currRow < ImageSource.PixelHeight)
+            {
+                int countVer = 0;
+                for (int i = 0; i < stride; i++)
+                {
+                    // copy each byte in this row
+                    arr1[i] = bytes[i + (stride * (currRow))];
+                    if (countVer == (gridSize * 4))
+                    {
+                        countVer = 0;
+                        arr1[i] = 255; // max blue 
+                    }
+                    countVer++;
+                }
+
+                if (countHor == gridSize)
+                {
+                    countHor = 0; // reset count
+                    for (int i = 0; i < stride; i += 4) // check each pixel across one row length
+                    {
+                        arr1[i] = 255; // max blue 
+                    }
+                }
+
+                for (int i = 0; i < stride; i++)
+                {
+                    // add back in to bytes array
+                    bytes[i + (stride * (currRow))] = arr1[i];
+                }
+                countHor++;
+                currRow++;
+            }
+            return Convert(bytes, src);
+        }
+
         //========================================  IMAGE OPERATIONS==========================================
         public ICommand MirrorHorizontallyCommand => new Command(MirrorHorizontally);
         public ICommand MirrorVerticallyCommand => new Command(MirrorVertically);
@@ -362,69 +407,7 @@ namespace ImageProcessor
             //var bitmapSource = BitmapSource.Create(original.PixelWidth, original.PixelHeight, original.DpiX, original.DpiY, original.Format, original.Palette, pixelBytes, stride);
             //ImageSource = bitmapSource;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        private BitmapSource Effect9(byte[] bytes, BitmapSource src)
-        {
-            int stride = (ImageSource.PixelWidth * ImageSource.Format.BitsPerPixel + 7) / 8;
-            byte[] arr1 = new byte[stride]; // one row of pixels
-
-            int countHor = 0;
-            int currRow = 1; 
-            int gridSize = 16;
-
-            while (currRow < ImageSource.PixelHeight) 
-            {
-                int countVer = 0;
-                for (int i = 0; i < stride; i ++) 
-                {
-                    // copy each byte in this row
-                    arr1[i] = bytes[i + (stride * (currRow))];
-                    if (countVer == (gridSize * 4)) 
-                    {
-                        countVer = 0;
-                        arr1[i] = 255; // max blue 
-                    }
-                    countVer++;
-                }
-                
-               if (countHor == gridSize) 
-                {
-                    countHor = 0; // reset count
-                    for (int i = 0; i < stride; i += 4) // check each pixel across one row length
-                    {
-                        arr1[i] = 255; // max blue 
-                    }
-                }
-                 
-                for (int i = 0; i < stride; i++) 
-                {
-                    // add back in to bytes array
-                    bytes[i + (stride * (currRow))] = arr1[i];
-                }
-                countHor++; 
-                currRow++;
-            }
-
-            
-            return Convert(bytes, src);
-
-        }
+        
         //========================================  ANIMATION  ==========================================
         public void PlayAnimation()
         {
