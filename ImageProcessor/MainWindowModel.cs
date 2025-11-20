@@ -292,41 +292,40 @@ namespace ImageProcessor
         }
         private BitmapSource Effect8(byte[] bytes, BitmapSource src)
         {
-            Trace.WriteLine(bytes.Length);
-            int row = 0;
-            bool written = false;
-            for (int i = 0; i < bytes.Length; i += 4)
+            for (int i = 0; i < bytes.Length - 1; i += 4)
             {
-                if (i % src.PixelWidth == 0) row++;
-                if(row % 15 == 0)
+                int row = i / src.PixelWidth;
+                int positionWithinRow = i % (src.PixelWidth);
+                //Only swap the second half of the row
+                if (positionWithinRow > src.PixelWidth)
                 {
-                    if (!written)
-                    {
-                        Trace.WriteLine($"row: {row}");
-                        written = true;
-                    }
-                    bytes[i] = (byte)row;
-                    bytes[i + 1] = (byte)row;
-                    bytes[i + 2] = (byte)row;
+                    continue;
                 }
-                else
+
+                int destinationWithinRow = src.PixelWidth - positionWithinRow;
+                int totalDestination = row * src.PixelWidth + destinationWithinRow;
+                for (int j = 0; j < 4; j++)
                 {
-                    written = false;
+                    byte temp = bytes[i + j];
+                    bytes[i + j] = bytes[totalDestination];
+                    bytes[totalDestination] = temp;
                 }
+
             }
+
             return Convert(bytes, src);
         }
 
         private BitmapSource Effect9(byte[] bytes, BitmapSource src)
         {
-            int stride = (ImageSource.PixelWidth * ImageSource.Format.BitsPerPixel + 7) / 8;
+            int stride = (src.PixelWidth * src.Format.BitsPerPixel + 7) / 8;
             byte[] arr1 = new byte[stride]; // one row of pixels
 
             int countHor = 0;
             int currRow = 1;
             int gridSize = 64; // kept divisible by 4 but maybe not needed?
 
-            while (currRow < ImageSource.PixelHeight)
+            while (currRow < src.PixelHeight)
             {
                 int countVer = 0;
                 for (int i = 0; i < stride; i++)
@@ -418,32 +417,40 @@ namespace ImageProcessor
             {
                 return; // handle no image selected
             }
-            var bytes = Convert(ImageSource);
-            for(int i = 0; i < bytes.Length -1 ; i += 4)
+            byte[] bytes = Convert(ImageSource);
+
+            int row = 0;
+
+            for(int byteIndex = 0; byteIndex < bytes.Length; byteIndex += 4) // pixel pointer?
             {
-                int row = i / ImageSource.PixelWidth * 4;
-                int positionWithinRow = i % (ImageSource.PixelWidth * 4);
-                //Only swap the second half of the row
-                if (positionWithinRow > ImageSource.PixelWidth * 4)
+
+                if (byteIndex % (ImageSource.PixelWidth * 4) == 0) row++;
+
+                var posInRow = (byteIndex % (ImageSource.PixelWidth * 4)) / 4;
+                if (posInRow > ImageSource.PixelWidth / 2)
                 {
-                    //bytes[i] = 0;
-                    //bytes[i + 1] = 0;
+                    var destInRow = ImageSource.PixelWidth - posInRow;
+                    var diff = (posInRow - destInRow) * 4; // in bytes
+                    var destIndex = byteIndex - diff;
 
-                    continue;
+                    var temp = bytes[byteIndex];
+                    bytes[byteIndex] = bytes[destIndex];
+                    bytes[destIndex] = temp;
+
+
+                    temp = bytes[byteIndex+1];
+                    bytes[byteIndex+1] = bytes[destIndex+1];
+                    bytes[destIndex+1] = temp;
+
+                    temp = bytes[byteIndex+2];
+                    bytes[byteIndex+2] = bytes[destIndex+2];
+                    bytes[destIndex+2] = temp;
+
+                    temp = bytes[byteIndex+3];
+                    bytes[byteIndex+3] = bytes[destIndex+3];
+                    bytes[destIndex+3] = temp;
                 }
-
-                int destinationWithinRow = ImageSource.PixelWidth * 4 - positionWithinRow;
-                int totalDestination = row * ImageSource.PixelWidth*4 + destinationWithinRow;
-                for(int j = 0; j < 2; j++)
-                {
-                    byte temp = bytes[i+j];
-                    bytes[i+j] = bytes[totalDestination];
-                    bytes[totalDestination] = temp;
-
-                }
-                   
             }
-
             ImageSource = Convert(bytes, ImageSource);
         }
 
@@ -453,10 +460,12 @@ namespace ImageProcessor
             {
                 return; // handle no image selected
             }
-            //BitmapSource original = ImageSource;
-            //int stride = (original.PixelWidth * original.Format.BitsPerPixel + 7) / 8;
-            //var bitmapSource = BitmapSource.Create(original.PixelWidth, original.PixelHeight, original.DpiX, original.DpiY, original.Format, original.Palette, pixelBytes, stride);
-            //ImageSource = bitmapSource;
+            var bytes = Convert(ImageSource);
+            var rowLength = ImageSource.PixelWidth;
+            int row = 0;
+            ImageSource = Convert(bytes, ImageSource);
+
+            //while(row * rowLength < )
         }
 
 
@@ -466,10 +475,12 @@ namespace ImageProcessor
             {
                 return; // handle no image selected
             }
-            //BitmapSource original = ImageSource;
-            //int stride = (original.PixelWidth * original.Format.BitsPerPixel + 7) / 8;
-            //var bitmapSource = BitmapSource.Create(original.PixelWidth, original.PixelHeight, original.DpiX, original.DpiY, original.Format, original.Palette, pixelBytes, stride);
-            //ImageSource = bitmapSource;
+            var bytes = Convert(ImageSource);
+
+            for (int i = 0; i < bytes.Length; i += 4)
+            {
+                Trace.WriteLine($"{i}: {bytes[i].ToString()}");
+            }
         }
 
         private void Downsample()
