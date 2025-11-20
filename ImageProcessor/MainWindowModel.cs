@@ -195,6 +195,9 @@ namespace ImageProcessor
                 case "9. Add Checkered Overlay":
                     ImageSource = Effect9(bytes, ImageSource);
                     break;
+                case "10. Static Effect":
+                    ImageSource = Effect10(bytes, ImageSource);
+                    break;
             }
         }
 
@@ -210,7 +213,8 @@ namespace ImageProcessor
             "7. Black and White Effect",
             "8.",
 
-            "9. Add Checkered Overlay"
+            "9. Add Checkered Overlay",
+            "10. Static Effect"
         };
 
         private BitmapSource Effect1(byte[] bytes, BitmapSource src)
@@ -357,6 +361,20 @@ namespace ImageProcessor
             return Convert(bytes, src);
         }
 
+        private BitmapSource Effect10(byte[] bytes, BitmapSource src)
+        {
+            Random rand = new Random();
+            int staticFreq = 10;
+
+            for (int i = 0; i < bytes.Length; i += rand.Next(staticFreq))
+            {
+                bytes[i] = (byte)rand.Next(); // blue
+                bytes[i + 1] = (byte)rand.Next(); // green
+                bytes[i + 2] = (byte)rand.Next(); // red
+                                                  // Currently throws bug if running multiple times TODO: FIx bug
+            }
+            return Convert(bytes, src);
+        }
 
         /*
          * var bytes = Convert(ImageSource);
@@ -387,6 +405,7 @@ namespace ImageProcessor
 
             ImageSource = Convert(bytes, ImageSource; 
          */
+         
         //========================================  IMAGE OPERATIONS==========================================
         public ICommand MirrorHorizontallyCommand => new Command(MirrorHorizontally);
         public ICommand MirrorVerticallyCommand => new Command(MirrorVertically);
