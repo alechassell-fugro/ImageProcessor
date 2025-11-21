@@ -479,40 +479,29 @@ namespace ImageProcessor
             var bytes = Convert(ImageSource);
             if (bytes is null) return;
             byte[] outbytes = new byte[bytes.Length];
-            ulong testTOREMOVE = 0;
-            int row = 0;
 
             var original = ImageSource;
             int stride = (original.PixelHeight * original.Format.BitsPerPixel + 7) / 8;
+            int row = 0;
 
-            Trace.WriteLine("Bitmap source info:");
-            Trace.WriteLine($"height {original.PixelHeight} | width {original.PixelHeight}");
-            Trace.WriteLine($"stride {stride} | total pix / stride {original.PixelHeight * original.PixelWidth * original.Format.BitsPerPixel / stride}");
             for (int byteIndex = 0; byteIndex < bytes.Length ; byteIndex += 4) // pixel pointer?
             {
                 var column = (byteIndex % (ImageSource.PixelWidth * 4)) / 4;
+                if (byteIndex % (ImageSource.PixelWidth * 4) == 0) row++;
 
+                /* 
+                 * We are swapping rows + cols
+                 * Therefore, using each, move
+                */
+                var destinationIndex = (stride * (column+1)) - ((row) * 4);
+                
                 for (int colourChannel = 0; colourChannel < 3; colourChannel++)
                 {
-                    /* 
-                     * We are swapping rows + cols
-                     * Therefore, using each, move
-                     */
-                    var destinationIndex = (stride * (column+1)) - ((row) * 4);
-
                     outbytes[destinationIndex + colourChannel] = bytes[byteIndex + colourChannel];
-                    if (testTOREMOVE < 1000)
-                        Trace.WriteLine($"{byteIndex + colourChannel}->{destinationIndex + colourChannel}");
                 }
-
-                testTOREMOVE++;
-                if (byteIndex % (ImageSource.PixelHeight * 4) == 0) row++;
             }
 
-
             var bitmapSource = BitmapSource.Create(original.PixelHeight, original.PixelWidth, original.DpiX, original.DpiY, original.Format, original.Palette, outbytes, stride);
-
-
 
             ImageSource = bitmapSource;
         }
