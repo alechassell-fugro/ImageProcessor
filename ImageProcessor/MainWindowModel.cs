@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -437,7 +438,6 @@ namespace ImageProcessor
                     bytes[byteIndex] = bytes[destIndex];
                     bytes[destIndex] = temp;
 
-
                     temp = bytes[byteIndex+1];
                     bytes[byteIndex+1] = bytes[destIndex+1];
                     bytes[destIndex+1] = temp;
@@ -461,9 +461,9 @@ namespace ImageProcessor
                 return; // handle no image selected
             }
             var bytes = Convert(ImageSource);
-            var rowLength = ImageSource.PixelWidth;
-            int row = 0;
-            ImageSource = Convert(bytes, ImageSource);
+
+            Trace.WriteLine($"First pixel: {bytes[0]} {bytes[1]} {bytes[2]} {bytes[3]}");
+            //ImageSource = Convert(bytes, ImageSource);
 
             //while(row * rowLength < )
         }
@@ -475,12 +475,46 @@ namespace ImageProcessor
             {
                 return; // handle no image selected
             }
-            var bytes = Convert(ImageSource);
 
-            for (int i = 0; i < bytes.Length; i += 4)
+            var bytes = Convert(ImageSource);
+            if (bytes is null) return;
+            byte[] outbytes = new byte[bytes.Length];
+            ulong testTOREMOVE = 0;
+            int row = 0;
+
+            var original = ImageSource;
+            int stride = (original.PixelHeight * original.Format.BitsPerPixel + 7) / 8;
+
+            Trace.WriteLine("Bitmap source info:");
+            Trace.WriteLine($"height {original.PixelHeight} | width {original.PixelHeight}");
+            Trace.WriteLine($"stride {stride} | total pix / stride {original.PixelHeight * original.PixelWidth * original.Format.BitsPerPixel / stride}");
+            for (int byteIndex = 0; byteIndex < bytes.Length ; byteIndex += 4) // pixel pointer?
             {
-                Trace.WriteLine($"{i}: {bytes[i].ToString()}");
+                var column = (byteIndex % (ImageSource.PixelWidth * 4)) / 4;
+
+                for (int colourChannel = 0; colourChannel < 3; colourChannel++)
+                {
+                    /* 
+                     * We are swapping rows + cols
+                     * Therefore, using each, move
+                     */
+                    var destinationIndex = (stride * (column)) - ((row- 1) * 4);
+
+                    outbytes[destinationIndex + colourChannel] = bytes[byteIndex + colourChannel];
+                    //if (testTOREMOVE < 1000000000)
+                        //Trace.WriteLine($"{byteIndex + colourChannel}->{destinationIndex + colourChannel}");
+                }
+
+                testTOREMOVE++;
+                if (byteIndex % (ImageSource.PixelHeight * 4) == 0) row++;
             }
+
+
+            var bitmapSource = BitmapSource.Create(original.PixelHeight, original.PixelWidth, original.DpiX, original.DpiY, original.Format, original.Palette, outbytes, stride);
+
+
+
+            ImageSource = bitmapSource;
         }
 
         private void Downsample()
