@@ -498,11 +498,11 @@ namespace ImageProcessor
                      * We are swapping rows + cols
                      * Therefore, using each, move
                      */
-                    var destinationIndex = (stride * (column)) - ((row- 1) * 4);
+                    var destinationIndex = (stride * (column+1)) - ((row) * 4);
 
                     outbytes[destinationIndex + colourChannel] = bytes[byteIndex + colourChannel];
-                    //if (testTOREMOVE < 1000000000)
-                        //Trace.WriteLine($"{byteIndex + colourChannel}->{destinationIndex + colourChannel}");
+                    if (testTOREMOVE < 1000)
+                        Trace.WriteLine($"{byteIndex + colourChannel}->{destinationIndex + colourChannel}");
                 }
 
                 testTOREMOVE++;
