@@ -199,6 +199,9 @@ namespace ImageProcessor
                 case "10. Static Effect":
                     ImageSource = Effect10(bytes, ImageSource);
                     break;
+                case "11. Spot Detection":
+                    ImageSource = Effect11(bytes, ImageSource);
+                    break;
             }
         }
 
@@ -215,7 +218,8 @@ namespace ImageProcessor
             "8.",
 
             "9. Add Checkered Overlay",
-            "10. Static Effect"
+            "10. Static Effect",
+            "11. Spot Detection"
         };
 
         private BitmapSource Effect1(byte[] bytes, BitmapSource src)
@@ -376,6 +380,66 @@ namespace ImageProcessor
             return Convert(bytes, src);
         }
 
+        private BitmapSource Effect11(byte[] bytes, BitmapSource src)
+        {
+            ImageSource = Effect7(bytes, ImageSource); // change to greyscale 
+
+            int stride = (src.PixelWidth * src.Format.BitsPerPixel + 7) / 8;
+            byte[] arr1 = new byte[stride]; // one row of pixels
+
+            int countHor = 0;
+            int currRow = 1;
+            int count = 0;
+            //int gridSize = 64; // kept divisible by 4 but maybe not needed?
+
+            while (currRow < src.PixelHeight)
+            {
+                int countVer = 0;
+                for (int i = 0; i < stride - 4; i+=4) // - 1 to remove right edge overflow
+                {
+                    // copy each byte in this row
+                    // arr1[i] = bytes[i + (stride * (currRow))];
+                    // arr1[i + 1] = bytes[i + (stride * (currRow)) + 1];
+
+                    //arr1[i] = 0; // black 
+
+                    if ((bytes[i + (stride * (currRow))]) == (bytes[i + (stride * (currRow)) + 4]) && bytes[i + (stride * (currRow)) + 4] == bytes[i + (stride * (currRow)) + 8]) // if arr == arr+1 spot encountered 
+                    {
+                        arr1[i] = 255; // white spot
+                        count++;
+                    }
+
+                    //if (i == stride - 1) continue; // catch right edge overflow
+
+
+                    //if (countVer == (gridSize * 4))
+                    //{
+                    //    countVer = 0;
+                    //    arr1[i] = 255; // max blue 
+                    //}
+                    //countVer++;
+                }
+
+                //if (countHor == gridSize)
+                //{
+                //    countHor = 0; // reset count
+                //    for (int i = 0; i < stride; i += 4) // check each pixel across one row length
+                //    {
+                //        arr1[i] = 255; // max blue 
+                //    }
+                //}
+
+                for (int i = 0; i < stride; i++)
+                {
+                    // add back in to bytes array
+                    bytes[i + (stride * (currRow))] = arr1[i];
+                }
+                countHor++;
+                currRow++;
+            }
+            return Convert(bytes, src);
+        }
+
         /*
          * var bytes = Convert(ImageSource);
             for(int i = 0; i < bytes.Length; i += 4)
@@ -405,7 +469,7 @@ namespace ImageProcessor
 
             ImageSource = Convert(bytes, ImageSource; 
          */
-         
+
         //========================================  IMAGE OPERATIONS==========================================
         public ICommand MirrorHorizontallyCommand => new Command(MirrorHorizontally);
         public ICommand MirrorVerticallyCommand => new Command(MirrorVertically);
