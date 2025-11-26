@@ -389,45 +389,28 @@ namespace ImageProcessor
 
             int countHor = 0;
             int currRow = 1;
-            int count = 0;
+            //int count = 0;
             //int gridSize = 64; // kept divisible by 4 but maybe not needed?
 
             while (currRow < src.PixelHeight)
             {
-                int countVer = 0;
-                for (int i = 0; i < stride - 4; i+=4) // - 1 to remove right edge overflow
+                //int countVer = 0;
+
+                int oldComparison = bytes[0]; // +- 10 * heat val ? to increase/decrease sensitivity 
+                int newComparison = 0; 
+
+                for (int i = 1; i < stride - 4; i+=4) // - 1 to remove right edge overflow
                 {
-                    // copy each byte in this row
-                    // arr1[i] = bytes[i + (stride * (currRow))];
-                    // arr1[i + 1] = bytes[i + (stride * (currRow)) + 1];
+                    arr1[i] = bytes[i + (stride * (currRow))];
+                    newComparison = bytes[i + (stride * (currRow)) + 4]; 
 
-                    //arr1[i] = 0; // black 
-
-                    if ((bytes[i + (stride * (currRow))]) == (bytes[i + (stride * (currRow)) + 4]) && bytes[i + (stride * (currRow)) + 4] == bytes[i + (stride * (currRow)) + 8]) // if arr == arr+1 spot encountered 
+                    if ((newComparison < oldComparison + 10) && (newComparison > oldComparison - 10))
                     {
-                        arr1[i] = 255; // white spot
-                        count++;
+                         arr1[i] = 0;
                     }
 
-                    //if (i == stride - 1) continue; // catch right edge overflow
-
-
-                    //if (countVer == (gridSize * 4))
-                    //{
-                    //    countVer = 0;
-                    //    arr1[i] = 255; // max blue 
-                    //}
-                    //countVer++;
+                    oldComparison = newComparison;
                 }
-
-                //if (countHor == gridSize)
-                //{
-                //    countHor = 0; // reset count
-                //    for (int i = 0; i < stride; i += 4) // check each pixel across one row length
-                //    {
-                //        arr1[i] = 255; // max blue 
-                //    }
-                //}
 
                 for (int i = 0; i < stride; i++)
                 {
